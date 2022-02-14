@@ -1,7 +1,6 @@
 import os
 import sys
 import logging
-from logging.handlers import RotatingFileHandler
 import requests
 import time
 from telegram import Bot
@@ -15,8 +14,6 @@ TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-# handler = RotatingFileHandler(
-#     'my_logger.log', maxBytes=50000000, backupCount=5)
 handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(handler)
 formatter = logging.Formatter(
@@ -99,7 +96,7 @@ def main():
     if not check_tokens_result:
         exit()
     bot = Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = int(time.time())
+    # current_timestamp = int(time.time())
 
     homework_preload_id = 0
     homework_preload_status = 'initial'
@@ -108,7 +105,8 @@ def main():
             response = get_api_answer(1)
             homeworks = check_response(response)
             homework = homeworks[0]
-            if homework_preload_status != homework['status'] or homework_preload_id != homework['id']:
+            if (homework_preload_status != homework['status']
+                    or homework_preload_id != homework['id']):
                 verdict = parse_status(homework)
                 send_message(bot, verdict)
             else:
@@ -120,8 +118,8 @@ def main():
             message = f'Сбой в работе программы: {error}'
             logger.error(message)
             send_message(bot, message)
-        else:
-            current_timestamp = response['current_date']
+        # else:
+            # current_timestamp = response['current_date']
         finally:
             time.sleep(RETRY_TIME)
 
