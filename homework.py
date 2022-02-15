@@ -62,14 +62,21 @@ def get_api_answer(current_timestamp):
 
 def check_response(response):
     """Проверяет наличие работы в ответе от сервера."""
-    if isinstance(response['homeworks'], list):
-        return response['homeworks']
+    homeworks = response['homeworks']
+    if type(homeworks) == None:
+        logger.error('В ответе сервера нет данных о работе.')
+    if isinstance(homeworks, list):
+        return homeworks
 
 
 def parse_status(homework):
     """Выносит вердикт о проверке работы."""
     homework_name = homework['homework_name']
     homework_status = homework['status']
+    if type(homework_name) == None:
+        logger.error('В ответе сервера нет названия домашней работы.')
+    if type(homework_status) == None:
+        logger.error('В ответе сервера нет статуса домашней работы.')
     verdict = HOMEWORK_STATUSES[homework_status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
@@ -81,8 +88,8 @@ def check_tokens():
         'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
         'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID,
     }
-    for token in tokens:
-        if not tokens[token]:
+    for token, value in tokens.items():
+        if not value:
             logger.critical(
                 f'Отсутствует обязательная переменная окружения: {token}'
             )
@@ -96,7 +103,6 @@ def main():
     if not check_tokens_result:
         exit()
     bot = Bot(token=TELEGRAM_TOKEN)
-    # current_timestamp = int(time.time())
 
     homework_preload_id = 0
     homework_preload_status = 'initial'
@@ -105,21 +111,21 @@ def main():
             response = get_api_answer(1)
             homeworks = check_response(response)
             homework = homeworks[0]
-            if (homework_preload_status != homework['status']
+            status_received = homework['status']
+            if (homework_preload_status != status_received
                     or homework_preload_id != homework['id']):
                 verdict = parse_status(homework)
                 send_message(bot, verdict)
+                homework_preload_status = status_received
             else:
-                logger.debug('В ответе нет новых статусов.')
+                logger.debug('Статус работы не обновлен.')
             if homework_preload_id != homework['id']:
                 homework_preload_id = homework['id']
-                homework_preload_status = homework['status']
+                homework_preload_status = status_received
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             logger.error(message)
             send_message(bot, message)
-        # else:
-            # current_timestamp = response['current_date']
         finally:
             time.sleep(RETRY_TIME)
 
