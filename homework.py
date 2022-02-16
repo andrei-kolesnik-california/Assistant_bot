@@ -63,7 +63,7 @@ def get_api_answer(current_timestamp):
 def check_response(response):
     """Проверяет наличие работы в ответе от сервера."""
     homeworks = response['homeworks']
-    if type(homeworks) == None:
+    if homeworks is None:
         logger.error('В ответе сервера нет данных о работе.')
     if isinstance(homeworks, list):
         return homeworks
@@ -73,9 +73,9 @@ def parse_status(homework):
     """Выносит вердикт о проверке работы."""
     homework_name = homework['homework_name']
     homework_status = homework['status']
-    if type(homework_name) == None:
+    if homework_name is None:
         logger.error('В ответе сервера нет названия домашней работы.')
-    if type(homework_status) == None:
+    if homework_status is None:
         logger.error('В ответе сервера нет статуса домашней работы.')
     verdict = HOMEWORK_STATUSES[homework_status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
