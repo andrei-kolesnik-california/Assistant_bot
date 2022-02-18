@@ -62,7 +62,7 @@ def get_api_answer(current_timestamp):
 
 def check_response(response):
     """Проверяет наличие работы в ответе от сервера."""
-    homeworks = response.get('homeworks')
+    homeworks = response['homeworks']
     if homeworks is None:
         logger.error('В ответе сервера нет данных о работе.')
     if isinstance(homeworks, list):
