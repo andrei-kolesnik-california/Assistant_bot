@@ -62,7 +62,7 @@ def get_api_answer(current_timestamp):
 
 def check_response(response):
     """Проверяет наличие работы в ответе от сервера."""
-    homeworks = response['homeworks']
+    homeworks = response.get('homeworks')
     if homeworks is None:
         logger.error('В ответе сервера нет данных о работе.')
     if isinstance(homeworks, list):
@@ -71,8 +71,8 @@ def check_response(response):
 
 def parse_status(homework):
     """Выносит вердикт о проверке работы."""
-    homework_name = homework['homework_name']
-    homework_status = homework['status']
+    homework_name = homework.get('homework_name')
+    homework_status = homework.get('status')
     if homework_name is None:
         logger.error('В ответе сервера нет названия домашней работы.')
     if homework_status is None:
@@ -103,12 +103,12 @@ def main():
     if not check_tokens_result:
         exit()
     bot = Bot(token=TELEGRAM_TOKEN)
-
     homework_preload_id = 0
     homework_preload_status = 'initial'
     while True:
         try:
-            response = get_api_answer(1)
+            current_timestamp = int(time.time())
+            response = get_api_answer(current_timestamp)
             homeworks = check_response(response)
             homework = homeworks[0]
             status_received = homework['status']
@@ -126,6 +126,8 @@ def main():
             message = f'Сбой в работе программы: {error}'
             logger.error(message)
             send_message(bot, message)
+        else:
+            current_timestamp = response['current_date']
         finally:
             time.sleep(RETRY_TIME)
 
