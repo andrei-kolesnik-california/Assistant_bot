@@ -1,4 +1,5 @@
 import os
+from sqlite3 import Timestamp
 import sys
 import logging
 import requests
@@ -107,8 +108,9 @@ def main():
     homework_preload_status = 'initial'
     while True:
         try:
-            current_timestamp = int(time.time())
-            response = get_api_answer(current_timestamp)
+            # current_timestamp = int(time.time())
+            timestamp = 1652289700
+            response = get_api_answer(timestamp)
             homeworks = check_response(response)
             homework = homeworks[0]
             status_received = homework['status']
